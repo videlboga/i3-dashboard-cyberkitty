@@ -1,0 +1,26 @@
+# Логи
+*.log
+server.log
+nohup.out
+
+# Временные файлы
+.DS_Store
+.vscode/
+.idea/
+*.tmp
+*.temp
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.pytest_cache/
+
+# Статус файлы помодоро
+/tmp/pomodoro_*.txt
+
+# Кэш браузера
+*.cache 

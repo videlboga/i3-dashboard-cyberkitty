@@ -1,0 +1,218 @@
+/* ========================================
+   TRANSPARENT WORKSPACE DASHBOARD
+   Прозрачный дашборд для отдельного воркспейса
+   ======================================== */
+
+/* Фон с обоями как в системе */
+body {
+    background: var(--cyberkitty-bg) url('/api/wallpaper') center/cover no-repeat !important;
+    background-attachment: fixed !important;
+}
+
+.dashboard-container {
+    background: transparent !important;
+    min-height: 100vh;
+    padding: 20px;
+    margin: 0;
+}
+
+/* Убираем заголовок дашборда */
+.dashboard-header {
+    display: none;
+}
+
+/* Сетка для оконного режима */
+.dashboard-grid {
+    grid-template-columns: 1fr 1fr 1.5fr;
+    grid-template-rows: auto auto;
+    gap: 20px;
+    padding: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Делаем виджеты полупрозрачными с глассморфизмом */
+.widget {
+    background: rgba(49, 50, 68, 0.85) !important;
+    border: 1px solid rgba(137, 180, 250, 0.3) !important;
+    backdrop-filter: blur(15px);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.widget:hover {
+    background: rgba(49, 50, 68, 0.95) !important;
+    border-color: rgba(137, 180, 250, 0.6) !important;
+    transform: translateY(-2px);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(137, 180, 250, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Помодоро виджет - левый верхний */
+.pomodoro-widget {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+/* Календарь - средний */
+.calendar-widget {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+}
+
+/* Мониторинг - правый */
+.monitor-widget {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+}
+
+/* Адаптируем помодоро для прозрачности */
+.timer-display {
+    text-shadow: 
+        0 0 20px rgba(137, 180, 250, 0.8),
+        0 0 40px rgba(137, 180, 250, 0.4);
+    font-size: 2.5rem;
+}
+
+.timer-display.break-mode {
+    text-shadow: 
+        0 0 20px rgba(243, 139, 168, 0.8),
+        0 0 40px rgba(243, 139, 168, 0.4);
+}
+
+/* Кнопки с глассморфизмом */
+.btn {
+    background: rgba(49, 50, 68, 0.7) !important;
+    border: 1px solid rgba(137, 180, 250, 0.3) !important;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    background: rgba(137, 180, 250, 0.2) !important;
+    border-color: rgba(137, 180, 250, 0.6) !important;
+    box-shadow: 0 0 15px rgba(137, 180, 250, 0.3);
+}
+
+.btn-primary {
+    background: rgba(137, 180, 250, 0.8) !important;
+    color: var(--cyberkitty-bg) !important;
+}
+
+.btn-accent {
+    background: rgba(243, 139, 168, 0.8) !important;
+    color: var(--cyberkitty-bg) !important;
+}
+
+/* Элементы со свечением */
+.widget-header h2 {
+    text-shadow: 0 0 10px rgba(137, 180, 250, 0.5);
+}
+
+/* Статус элементы */
+.stat-card {
+    background: rgba(30, 30, 46, 0.6) !important;
+    border: 1px solid rgba(137, 180, 250, 0.2) !important;
+    backdrop-filter: blur(8px);
+}
+
+.container-item,
+.ssh-item,
+.event-item,
+.task-item {
+    background: rgba(30, 30, 46, 0.6) !important;
+    border: 1px solid rgba(137, 180, 250, 0.2) !important;
+    backdrop-filter: blur(8px);
+}
+
+/* Прогресс бары с свечением */
+.stat-progress-bar {
+    box-shadow: 0 0 10px currentColor;
+}
+
+/* Анимация появления виджетов */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+.widget {
+    animation: float 6s ease-in-out infinite;
+}
+
+.widget:nth-child(1) { animation-delay: 0s; }
+.widget:nth-child(2) { animation-delay: 2s; }
+.widget:nth-child(3) { animation-delay: 4s; }
+
+/* Скроллбары прозрачные */
+::-webkit-scrollbar {
+    width: 6px;
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(137, 180, 250, 0.3);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(137, 180, 250, 0.6);
+}
+
+/* Уведомления с глассморфизмом */
+.break-overlay {
+    background: rgba(30, 30, 46, 0.9) !important;
+    backdrop-filter: blur(20px) !important;
+}
+
+.break-message {
+    background: rgba(49, 50, 68, 0.9) !important;
+    backdrop-filter: blur(15px) !important;
+    border: 1px solid rgba(137, 180, 250, 0.3) !important;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(137, 180, 250, 0.2);
+}
+
+/* Мини-статус для плавающего режима */
+.floating-status {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(49, 50, 68, 0.8);
+    border: 1px solid rgba(137, 180, 250, 0.3);
+    backdrop-filter: blur(10px);
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 1000;
+    color: var(--cyberkitty-fg);
+    transition: all 0.3s ease;
+}
+
+.floating-status:hover {
+    background: rgba(49, 50, 68, 0.95);
+    transform: scale(1.05);
+}
+
+/* Адаптация для маленьких виджетов */
+@media (max-width: 1400px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr 1fr;
+    }
+    
+    .calendar-widget {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    
+    .monitor-widget {
+        grid-column: 2;
+        grid-row: 2 / span 2;
+    }
+} 

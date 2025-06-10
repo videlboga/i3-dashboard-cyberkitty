@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>🚀 Cyberkitty Dashboard</title>
+    <link rel="stylesheet" href="styles/cyberkitty.css?v=7">
+    <link rel="stylesheet" href="styles/dashboard.css?v=7">
+    <link rel="stylesheet" href="styles/transparent.css?v=7">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Заголовок -->
+        <header class="dashboard-header">
+            <div class="logo">
+                <span class="logo-icon">🚀</span>
+                <span class="logo-text">Cyberkitty Dashboard</span>
+            </div>
+            <div class="status-bar">
+                <span class="status-item" id="current-time"></span>
+                <span class="status-item" id="system-info"></span>
+            </div>
+        </header>
+
+        <!-- Основная сетка -->
+        <main class="dashboard-grid">
+            <!-- Помодоро таймер -->
+            <section class="widget pomodoro-widget" id="pomodoro-section">
+                <div class="widget-header">
+                    <h2>
+                        <div class="tomato-animation">
+                            <svg width="32" height="32" viewBox="0 0 100 100" class="animated-tomato">
+                                <!-- Листья -->
+                                <g class="tomato-leaves">
+                                    <path d="M45 15 Q40 10 35 15 Q40 20 45 15" fill="#4ade80" class="leaf leaf1"/>
+                                    <path d="M55 15 Q60 10 65 15 Q60 20 55 15" fill="#4ade80" class="leaf leaf2"/>
+                                    <path d="M50 12 Q45 8 50 5 Q55 8 50 12" fill="#22c55e" class="leaf leaf3"/>
+                                </g>
+                                <!-- Основная часть помидорки -->
+                                <ellipse cx="50" cy="55" rx="35" ry="30" fill="#ef4444" class="tomato-body"/>
+                                <!-- Блики -->
+                                <ellipse cx="40" cy="45" rx="8" ry="12" fill="#fca5a5" class="tomato-shine"/>
+                                <ellipse cx="35" cy="42" rx="3" ry="5" fill="#fef2f2" class="tomato-highlight"/>
+                                <!-- Глазки (когда таймер работает) -->
+                                <g class="tomato-eyes">
+                                    <circle cx="40" cy="50" r="3" fill="#1f2937"/>
+                                    <circle cx="60" cy="50" r="3" fill="#1f2937"/>
+                                    <circle cx="41" cy="49" r="1" fill="#ffffff"/>
+                                    <circle cx="61" cy="49" r="1" fill="#ffffff"/>
+                                </g>
+                                <!-- Улыбка -->
+                                <path d="M40 60 Q50 70 60 60" stroke="#1f2937" stroke-width="2" fill="none" class="tomato-smile"/>
+                            </svg>
+                        </div>
+                        Помодоро
+                    </h2>
+                </div>
+                <div class="widget-content" id="pomodoro-content">
+                    <div class="timer-container">
+                        <div class="big-tomato">
+                            <svg width="140" height="140" viewBox="0 0 140 140" class="progress-container">
+                                <!-- Фоновый круг прогресса -->
+                                <circle cx="70" cy="70" r="60" fill="none" stroke="#374151" stroke-width="4" class="progress-bg"/>
+                                <!-- Круг прогресса -->
+                                <circle cx="70" cy="70" r="60" fill="none" stroke="#ef4444" stroke-width="6" 
+                                        stroke-linecap="round" class="progress-bar" id="progress-circle"
+                                        stroke-dasharray="377" stroke-dashoffset="377"/>
+                                
+                                <!-- Помидорка в центре -->
+                                <g transform="translate(20, 20)">
+                                    <svg width="100" height="100" viewBox="0 0 100 100" class="big-animated-tomato">
+                                        <!-- Листья -->
+                                        <g class="big-tomato-leaves">
+                                            <path d="M45 15 Q40 10 35 15 Q40 20 45 15" fill="#4ade80" class="big-leaf big-leaf1"/>
+                                            <path d="M55 15 Q60 10 65 15 Q60 20 55 15" fill="#4ade80" class="big-leaf big-leaf2"/>
+                                            <path d="M50 12 Q45 8 50 5 Q55 8 50 12" fill="#22c55e" class="big-leaf big-leaf3"/>
+                                        </g>
+                                        <!-- Основная часть помидорки -->
+                                        <ellipse cx="50" cy="55" rx="35" ry="30" fill="#ef4444" class="big-tomato-body"/>
+                                        <!-- Блики -->
+                                        <ellipse cx="40" cy="45" rx="8" ry="12" fill="#fca5a5" class="big-tomato-shine"/>
+                                        <ellipse cx="35" cy="42" rx="3" ry="5" fill="#fef2f2" class="big-tomato-highlight"/>
+                                        <!-- Глазки -->
+                                        <g class="big-tomato-eyes">
+                                            <circle cx="40" cy="50" r="3" fill="#1f2937"/>
+                                            <circle cx="60" cy="50" r="3" fill="#1f2937"/>
+                                            <circle cx="41" cy="49" r="1" fill="#ffffff"/>
+                                            <circle cx="61" cy="49" r="1" fill="#ffffff"/>
+                                        </g>
+                                        <!-- Улыбка -->
+                                        <path d="M40 60 Q50 70 60 60" stroke="#1f2937" stroke-width="2" fill="none" class="big-tomato-smile"/>
+                                    </svg>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="timer-display" id="timer-display">25:00</div>
+                    </div>
+                    <div class="timer-controls">
+                        <button class="btn btn-primary" id="start-btn">Старт</button>
+                        <button class="btn btn-secondary" id="pause-btn">Пауза</button>
+                        <button class="btn btn-accent" id="reset-btn">Сброс</button>
+                    </div>
+                    <div class="session-info">
+                        <span>Сессия: <span id="session-count">1/8</span></span>
+                        <span>Тип: <span id="session-type">Работа</span></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Системная информация -->
+            <section class="widget system-widget" id="system-section">
+                <div class="widget-header">
+                    <h2>🖥️ Система</h2>
+                    <div class="tab-controls" id="system-tabs">
+                        <button class="tab-btn active" data-tab="overview">Обзор</button>
+                        <button class="tab-btn" data-tab="memory">Память</button>
+                        <button class="tab-btn" data-tab="temp">Темп.</button>
+                        <button class="tab-btn" data-tab="disks">Диски</button>
+                    </div>
+                </div>
+                <div class="widget-content" id="system-content">
+                    <div class="tab-content active" id="overview-tab">
+                        <div class="system-overview" id="system-overview">
+                            <div class="loading">Загрузка обзора системы...</div>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="memory-tab">
+                        <div class="memory-details" id="memory-details">
+                            <div class="loading">Загрузка информации о памяти...</div>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="temp-tab">
+                        <div class="temperature-sensors" id="temperature-sensors">
+                            <div class="loading">Загрузка температур...</div>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="disks-tab">
+                        <div class="disk-activity" id="disk-activity">
+                            <div class="loading">Загрузка дисковой активности...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Календарь -->
+            <section class="widget calendar-widget" id="calendar-section">
+                <div class="widget-header">
+                    <h2>📅 Календарь</h2>
+                    <button class="btn btn-small" id="sync-calendar">Синх</button>
+                </div>
+                <div class="widget-content" id="calendar-content">
+                    <div class="today-events" id="today-events">
+                        <div class="loading">Загрузка событий...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Мониторинг процессов -->
+            <section class="widget monitor-widget" id="monitor-section">
+                <div class="widget-header">
+                    <h2>⚙️ Процессы</h2>
+                    <div class="tab-controls" id="monitor-tabs">
+                        <button class="tab-btn active" data-tab="processes">Процессы</button>
+                        <button class="tab-btn" data-tab="docker">Docker</button>
+                        <button class="tab-btn" data-tab="ssh">SSH</button>
+                    </div>
+                </div>
+                <div class="widget-content" id="monitor-content">
+                    <div class="tab-content active" id="processes-tab">
+                        <div class="process-list" id="process-list">
+                            <div class="loading">Загрузка процессов...</div>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="docker-tab">
+                        <div class="docker-containers" id="docker-containers">
+                            <div class="loading">Загрузка Docker контейнеров...</div>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="ssh-tab">
+                        <div class="ssh-connections" id="ssh-connections">
+                            <div class="loading">Загрузка SSH подключений...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Скрипты -->
+    <script src="js/cyberkitty-theme.js?v=7"></script>
+    <script src="js/pomodoro.js?v=7"></script>
+    <script src="js/calendar.js?v=7"></script>
+    <script src="js/system.js?v=7"></script>
+    <script src="js/monitor.js?v=7"></script>
+    <script src="js/dashboard.js?v=7"></script>
+</body>
+</html> 
