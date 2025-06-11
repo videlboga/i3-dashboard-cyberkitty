@@ -113,30 +113,74 @@ class MonitorWidget {
         container.innerHTML = processHtml;
     }
     
-    renderDockerContainers() {
+    async renderDockerContainers() {
         const container = document.getElementById('docker-containers');
+        container.innerHTML = '<div class="loading">Загрузка Docker контейнеров...</div>';
         
-        // Заглушка для Docker
-        container.innerHTML = `
-            <div class="coming-soon">
-                <div class="coming-soon-icon">🐳</div>
-                <span>Docker мониторинг</span>
-                <small>Скоро будет добавлено</small>
-            </div>
-        `;
+        try {
+            const response = await fetch('/api/docker-containers');
+            this.dockerContainers = await response.json();
+            
+            let dockerHtml = `
+                <div class="docker-sections">
+                    <div class="docker-section local-docker">
+                        <h3>🖥️ Локальные контейнеры</h3>
+                        ${this.renderDockerTable(this.dockerContainers.local, 'local')}
+                    </div>
+                    <div class="docker-section remote-docker">
+                        <h3>🌐 Удаленные серверы</h3>
+                        ${this.renderRemoteDockerServers(this.dockerContainers.servers)}
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = dockerHtml;
+            
+        } catch (error) {
+            console.error('❌ Ошибка загрузки Docker контейнеров:', error);
+            container.innerHTML = `
+                <div class="error-message">
+                    <div class="error-icon">❌</div>
+                    <span>Ошибка загрузки Docker данных</span>
+                    <small>Проверьте подключение к серверам</small>
+                </div>
+            `;
+        }
     }
     
-    renderSSHConnections() {
+    async renderSSHConnections() {
         const container = document.getElementById('ssh-connections');
+        container.innerHTML = '<div class="loading">Загрузка SSH подключений...</div>';
         
-        // Заглушка для SSH
-        container.innerHTML = `
-            <div class="coming-soon">
-                <div class="coming-soon-icon">🔐</div>
-                <span>SSH мониторинг</span>
-                <small>Скоро будет добавлено</small>
-            </div>
-        `;
+        try {
+            const response = await fetch('/api/ssh-connections');
+            this.sshConnections = await response.json();
+            
+            let sshHtml = `
+                <div class="ssh-sections">
+                    <div class="ssh-section servers-status">
+                        <h3>🌐 Статус серверов</h3>
+                        ${this.renderServersStatus(this.sshConnections.servers_status)}
+                    </div>
+                    <div class="ssh-section local-connections">
+                        <h3>🔐 Локальные SSH подключения</h3>
+                        ${this.renderSSHTable(this.sshConnections.local_connections)}
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = sshHtml;
+            
+        } catch (error) {
+            console.error('❌ Ошибка загрузки SSH данных:', error);
+            container.innerHTML = `
+                <div class="error-message">
+                    <div class="error-icon">❌</div>
+                    <span>Ошибка загрузки SSH данных</span>
+                    <small>Проверьте SSH ключи и доступность серверов</small>
+                </div>
+            `;
+        }
     }
     
     getCpuClass(cpu) {
@@ -177,12 +221,183 @@ class MonitorWidget {
         return text.substring(0, maxLength - 3) + '...';
     }
     
+    renderDockerTable(containers, location) {
+        if (!containers || containers.length === 0) {
+            return `<div class="empty-state">Контейнеры не найдены</div>`;
+        }
+        
+        let tableHtml = `
+            <div class="docker-table">
+                <div class="docker-header">
+                    <span class="docker-col name">Имя</span>
+                    <span class="docker-col image">Образ</span>
+                    <span class="docker-col status">Статус</span>
+                    <span class="docker-col ports">Порты</span>
+                </div>
+        `;
+        
+        containers.forEach((container, index) => {
+            const statusClass = this.getDockerStatusClass(container.state);
+            
+            tableHtml += `
+                <div class="docker-row ${index % 2 === 0 ? 'even' : 'odd'}">
+                    <span class="docker-col name" title="${container.name}">${this.truncateText(container.name, 20)}</span>
+                    <span class="docker-col image" title="${container.image}">${this.truncateText(container.image, 25)}</span>
+                    <span class="docker-col status ${statusClass}">${this.formatDockerStatus(container.state)}</span>
+                    <span class="docker-col ports" title="${container.ports}">${this.truncateText(container.ports || 'Нет', 15)}</span>
+                </div>
+            `;
+        });
+        
+        tableHtml += '</div>';
+        return tableHtml;
+    }
+    
+    renderRemoteDockerServers(servers) {
+        let serversHtml = '';
+        
+        Object.entries(servers).forEach(([serverName, containers]) => {
+            const displayName = serverName === 'got_is_tod' ? '🚀 Got Is Tod' : '💎 Azure Aluminium';
+            
+            serversHtml += `
+                <div class="server-section">
+                    <h4>${displayName}</h4>
+                    ${this.renderDockerTable(containers, serverName)}
+                </div>
+            `;
+        });
+        
+        return serversHtml;
+    }
+    
+    renderServersStatus(serversStatus) {
+        let statusHtml = '<div class="servers-grid">';
+        
+        Object.entries(serversStatus).forEach(([serverName, status]) => {
+            const displayName = serverName === 'got_is_tod' ? '🚀 Got Is Tod' : '💎 Azure Aluminium';
+            const statusClass = this.getServerStatusClass(status.status);
+            
+            statusHtml += `
+                <div class="server-card ${statusClass}">
+                    <div class="server-header">
+                        <span class="server-name">${displayName}</span>
+                        <span class="server-status">${this.formatServerStatus(status.status)}</span>
+                    </div>
+                    <div class="server-details">
+                        ${status.ping ? `<div class="ping">🏓 Пинг: ${status.ping}ms</div>` : ''}
+                        ${status.info ? this.renderServerInfo(status.info) : ''}
+                        ${status.error ? `<div class="error">❌ ${status.error}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        
+        statusHtml += '</div>';
+        return statusHtml;
+    }
+    
+    renderServerInfo(info) {
+        if (!info) return '';
+        
+        let infoHtml = '';
+        if (info.uptime) infoHtml += `<div class="uptime">⏱️ ${info.uptime}</div>`;
+        if (info.disk) infoHtml += `<div class="disk">💾 ${info.disk}</div>`;
+        if (info.memory) infoHtml += `<div class="memory">🧠 ${info.memory}</div>`;
+        
+        return infoHtml;
+    }
+    
+    renderSSHTable(connections) {
+        if (!connections || connections.length === 0) {
+            return `<div class="empty-state">Активные SSH подключения не найдены</div>`;
+        }
+        
+        let tableHtml = `
+            <div class="ssh-table">
+                <div class="ssh-header">
+                    <span class="ssh-col type">Тип</span>
+                    <span class="ssh-col local">Локальный</span>
+                    <span class="ssh-col remote">Удаленный</span>
+                    <span class="ssh-col status">Статус</span>
+                </div>
+        `;
+        
+        connections.forEach((conn, index) => {
+            tableHtml += `
+                <div class="ssh-row ${index % 2 === 0 ? 'even' : 'odd'}">
+                    <span class="ssh-col type">${conn.type}</span>
+                    <span class="ssh-col local">${conn.local}</span>
+                    <span class="ssh-col remote">${conn.remote}</span>
+                    <span class="ssh-col status">${this.formatSSHStatus(conn.status)}</span>
+                </div>
+            `;
+        });
+        
+        tableHtml += '</div>';
+        return tableHtml;
+    }
+    
+    getDockerStatusClass(state) {
+        switch(state) {
+            case 'running': return 'docker-running';
+            case 'exited': return 'docker-exited';
+            case 'paused': return 'docker-paused';
+            case 'created': return 'docker-created';
+            default: return 'docker-unknown';
+        }
+    }
+    
+    formatDockerStatus(state) {
+        const statusMap = {
+            'running': '🟢 Запущен',
+            'exited': '🔴 Остановлен',
+            'paused': '⏸️ Приостановлен',
+            'created': '🆕 Создан',
+            'restarting': '🔄 Перезапуск'
+        };
+        return statusMap[state] || '❓ ' + state;
+    }
+    
+    getServerStatusClass(status) {
+        switch(status) {
+            case 'online': return 'server-online';
+            case 'offline': return 'server-offline';
+            case 'error': return 'server-error';
+            default: return 'server-unknown';
+        }
+    }
+    
+    formatServerStatus(status) {
+        const statusMap = {
+            'online': '🟢 Онлайн',
+            'offline': '🔴 Оффлайн',
+            'error': '❌ Ошибка'
+        };
+        return statusMap[status] || '❓ ' + status;
+    }
+    
+    formatSSHStatus(status) {
+        const statusMap = {
+            'LISTEN': '👂 Прослушивание',
+            'ESTABLISHED': '🔗 Установлено'
+        };
+        return statusMap[status] || status;
+    }
+
     startAutoRefresh() {
         setInterval(() => {
-            if (this.currentTab === 'processes') {
-                this.loadProcesses();
+            switch(this.currentTab) {
+                case 'processes':
+                    this.loadProcesses();
+                    break;
+                case 'docker':
+                    this.renderDockerContainers();
+                    break;
+                case 'ssh':
+                    this.renderSSHConnections();
+                    break;
             }
-        }, 5000); // Обновляем каждые 5 секунд
+        }, 10000); // Обновляем каждые 10 секунд
     }
 }
 

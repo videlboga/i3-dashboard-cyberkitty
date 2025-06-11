@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Тест Drag & Drop - CyberKitty</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-widget {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: grab;
+            transition: all 0.2s ease;
+            min-height: 100px;
+        }
+        
+        .test-widget:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(137, 180, 250, 0.3);
+        }
+        
+        .test-widget.dragging {
+            opacity: 0.6;
+            transform: rotate(2deg);
+            cursor: grabbing;
+        }
+        
+        .test-widget.drop-target {
+            border-color: #89b4fa;
+            background: rgba(137, 180, 250, 0.1);
+        }
+        
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .btn {
+            background: #1e40af;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+        }
+        
+        .btn.active {
+            background: #dc2626;
+        }
+        
+        .log {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 Тест системы перетаскивания виджетов</h1>
+        
+        <div class="controls">
+            <button class="btn" id="enableDrag">🎯 Включить перетаскивание</button>
+            <button class="btn" id="resetPos">🔄 Сбросить позиции</button>
+            <button class="btn" id="clearLog">🗑️ Очистить лог</button>
+        </div>
+        
+        <div class="test-grid" id="testGrid">
+            <div class="test-widget" id="widget1" draggable="false">
+                <h3>📊 Виджет 1</h3>
+                <p>Системная информация</p>
+            </div>
+            <div class="test-widget" id="widget2" draggable="false">
+                <h3>🗂️ Виджет 2</h3>
+                <p>Процессы</p>
+            </div>
+            <div class="test-widget" id="widget3" draggable="false">
+                <h3>🐳 Виджет 3</h3>
+                <p>Docker контейнеры</p>
+            </div>
+        </div>
+        
+        <div class="log" id="debugLog">
+            <strong>Лог отладки:</strong><br>
+            Готов к тестированию...<br>
+        </div>
+    </div>
+
+    <script>
+        class DragTestManager {
+            constructor() {
+                this.isDragMode = false;
+                this.draggedElement = null;
+                this.widgets = [];
+                this.init();
+            }
+            
+            init() {
+                this.log('🎯 Инициализация тестового менеджера');
+                this.widgets = Array.from(document.querySelectorAll('.test-widget'));
+                this.setupControls();
+                this.log(`📦 Найдено виджетов: ${this.widgets.length}`);
+            }
+            
+            setupControls() {
+                const enableBtn = document.getElementById('enableDrag');
+                const resetBtn = document.getElementById('resetPos');
+                const clearBtn = document.getElementById('clearLog');
+                
+                enableBtn.addEventListener('click', () => this.toggleDragMode());
+                resetBtn.addEventListener('click', () => this.resetPositions());
+                clearBtn.addEventListener('click', () => this.clearLog());
+            }
+            
+            toggleDragMode() {
+                const btn = document.getElementById('enableDrag');
+                
+                if (this.isDragMode) {
+                    this.disableDragMode();
+                    btn.textContent = '🎯 Включить перетаскивание';
+                    btn.classList.remove('active');
+                } else {
+                    this.enableDragMode();
+                    btn.textContent = '🔒 Выключить перетаскивание';
+                    btn.classList.add('active');
+                }
+            }
+            
+            enableDragMode() {
+                this.isDragMode = true;
+                this.log('✅ Режим перетаскивания ВКЛЮЧЕН');
+                
+                this.widgets.forEach((widget, index) => {
+                    widget.draggable = true;
+                    widget.style.cursor = 'grab';
+                    
+                    widget.addEventListener('dragstart', (e) => this.handleDragStart(e));
+                    widget.addEventListener('dragend', (e) => this.handleDragEnd(e));
+                    widget.addEventListener('dragover', (e) => this.handleDragOver(e));
+                    widget.addEventListener('drop', (e) => this.handleDrop(e));
+                    
+                    this.log(`📋 Виджет ${index + 1} (${widget.id}) готов к перетаскиванию`);
+                });
+            }
+            
+            disableDragMode() {
+                this.isDragMode = false;
+                this.log('❌ Режим перетаскивания ВЫКЛЮЧЕН');
+                
+                this.widgets.forEach(widget => {
+                    widget.draggable = false;
+                    widget.style.cursor = 'default';
+                    widget.classList.remove('dragging', 'drop-target');
+                    
+                    // Удаляем обработчики
+                    widget.removeEventListener('dragstart', this.handleDragStart);
+                    widget.removeEventListener('dragend', this.handleDragEnd);
+                    widget.removeEventListener('dragover', this.handleDragOver);
+                    widget.removeEventListener('drop', this.handleDrop);
+                });
+            }
+            
+            handleDragStart(e) {
+                this.draggedElement = e.target;
+                e.target.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', e.target.id);
+                this.log(`🎯 Начато перетаскивание: ${e.target.id}`);
+            }
+            
+            handleDragEnd(e) {
+                e.target.classList.remove('dragging');
+                this.widgets.forEach(w => w.classList.remove('drop-target'));
+                this.log(`🏁 Завершено перетаскивание: ${e.target.id}`);
+                this.draggedElement = null;
+            }
+            
+            handleDragOver(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                
+                const target = e.target.closest('.test-widget');
+                if (target && target !== this.draggedElement) {
+                    target.classList.add('drop-target');
+                }
+            }
+            
+            handleDrop(e) {
+                e.preventDefault();
+                const target = e.target.closest('.test-widget');
+                const draggedId = e.dataTransfer.getData('text/plain');
+                
+                if (target && draggedId && target.id !== draggedId) {
+                    this.swapWidgets(draggedId, target.id);
+                }
+                
+                target?.classList.remove('drop-target');
+            }
+            
+            swapWidgets(draggedId, targetId) {
+                const draggedWidget = document.getElementById(draggedId);
+                const targetWidget = document.getElementById(targetId);
+                
+                this.log(`🔄 Меняем местами: ${draggedId} ↔ ${targetId}`);
+                
+                // Получаем позиции
+                const draggedColumn = draggedWidget.style.gridColumn || this.getGridColumn(draggedWidget);
+                const targetColumn = targetWidget.style.gridColumn || this.getGridColumn(targetWidget);
+                
+                // Меняем местами
+                draggedWidget.style.gridColumn = targetColumn;
+                targetWidget.style.gridColumn = draggedColumn;
+                
+                this.log(`✅ Перестановка завершена!`);
+            }
+            
+            getGridColumn(element) {
+                const grid = document.getElementById('testGrid');
+                const children = Array.from(grid.children);
+                const index = children.indexOf(element);
+                return (index + 1).toString();
+            }
+            
+            resetPositions() {
+                this.widgets.forEach(widget => {
+                    widget.style.gridColumn = '';
+                });
+                this.log('🔄 Позиции виджетов сброшены');
+            }
+            
+            log(message) {
+                const logElement = document.getElementById('debugLog');
+                const time = new Date().toLocaleTimeString();
+                logElement.innerHTML += `<br>[${time}] ${message}`;
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            
+            clearLog() {
+                document.getElementById('debugLog').innerHTML = '<strong>Лог отладки:</strong><br>Лог очищен...<br>';
+            }
+        }
+        
+        // Запускаем тест при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            window.dragTest = new DragTestManager();
+        });
+    </script>
+</body>
+</html> 

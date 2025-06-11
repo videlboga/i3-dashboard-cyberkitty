@@ -8,8 +8,8 @@
     <meta http-equiv="Expires" content="0">
     <title>🚀 Cyberkitty Dashboard</title>
     <link rel="stylesheet" href="styles/cyberkitty.css?v=7">
-    <link rel="stylesheet" href="styles/dashboard.css?v=7">
-    <link rel="stylesheet" href="styles/transparent.css?v=7">
+    <link rel="stylesheet" href="styles/dashboard.css?v=25">
+    <link rel="stylesheet" href="styles/transparent.css?v=16">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -117,11 +117,14 @@
             <section class="widget system-widget" id="system-section">
                 <div class="widget-header">
                     <h2>🖥️ Система</h2>
-                    <div class="tab-controls" id="system-tabs">
-                        <button class="tab-btn active" data-tab="overview">Обзор</button>
-                        <button class="tab-btn" data-tab="memory">Память</button>
-                        <button class="tab-btn" data-tab="temp">Темп.</button>
-                        <button class="tab-btn" data-tab="disks">Диски</button>
+                    <div class="widget-controls">
+                        <div class="tab-controls" id="system-tabs">
+                            <button class="tab-btn active" data-tab="overview">Обзор</button>
+                            <button class="tab-btn" data-tab="memory">Память</button>
+                            <button class="tab-btn" data-tab="temp">Темп.</button>
+                            <button class="tab-btn" data-tab="disks">Диски</button>
+                            <button class="tab-btn" data-tab="layout">Макет</button>
+                        </div>
                     </div>
                 </div>
                 <div class="widget-content" id="system-content">
@@ -145,6 +148,30 @@
                             <div class="loading">Загрузка дисковой активности...</div>
                         </div>
                     </div>
+                    <div class="tab-content" id="layout-tab">
+                        <div class="layout-controls-panel">
+                            <h3>🎯 Управление макетом</h3>
+                            <div class="layout-buttons">
+                                <button class="btn btn-primary" id="enable-drag-mode">
+                                    🎯 Режим перетаскивания
+                                </button>
+                                <button class="btn btn-secondary" id="reset-widget-layout">
+                                    🔄 Сбросить расположение
+                                </button>
+                                <button class="btn btn-success" id="save-widget-layout">
+                                    💾 Сохранить макет
+                                </button>
+                            </div>
+                            <div class="layout-info" id="layout-info">
+                                <p><strong>Инструкция:</strong></p>
+                                <ol>
+                                    <li>Нажмите "Режим перетаскивания" для активации</li>
+                                    <li>Перетаскивайте виджеты за заголовки</li>
+                                    <li>Сохраните макет для запоминания позиций</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -161,31 +188,38 @@
                 </div>
             </section>
 
-            <!-- Мониторинг процессов -->
-            <section class="widget monitor-widget" id="monitor-section">
+            <!-- Процессы -->
+            <section class="widget processes-widget" id="processes-section">
                 <div class="widget-header">
-                    <h2>⚙️ Процессы</h2>
-                    <div class="tab-controls" id="monitor-tabs">
-                        <button class="tab-btn active" data-tab="processes">Процессы</button>
-                        <button class="tab-btn" data-tab="docker">Docker</button>
-                        <button class="tab-btn" data-tab="ssh">SSH</button>
+                    <h2>📋 Процессы</h2>
+                </div>
+                <div class="widget-content">
+                    <div class="process-list" id="process-list">
+                        <div class="loading">Загрузка процессов...</div>
                     </div>
                 </div>
-                <div class="widget-content" id="monitor-content">
-                    <div class="tab-content active" id="processes-tab">
-                        <div class="process-list" id="process-list">
-                            <div class="loading">Загрузка процессов...</div>
-                        </div>
+            </section>
+
+            <!-- Docker контейнеры -->
+            <section class="widget docker-widget" id="docker-section">
+                <div class="widget-header">
+                    <h2>🐳 Docker</h2>
+                </div>
+                <div class="widget-content">
+                    <div class="docker-containers" id="docker-containers">
+                        <div class="loading">Загрузка Docker контейнеров...</div>
                     </div>
-                    <div class="tab-content" id="docker-tab">
-                        <div class="docker-containers" id="docker-containers">
-                            <div class="loading">Загрузка Docker контейнеров...</div>
-                        </div>
-                    </div>
-                    <div class="tab-content" id="ssh-tab">
-                        <div class="ssh-connections" id="ssh-connections">
-                            <div class="loading">Загрузка SSH подключений...</div>
-                        </div>
+                </div>
+            </section>
+
+            <!-- SSH подключения -->
+            <section class="widget ssh-widget" id="ssh-section">
+                <div class="widget-header">
+                    <h2>🔐 SSH</h2>
+                </div>
+                <div class="widget-content">
+                    <div class="ssh-connections" id="ssh-connections">
+                        <div class="loading">Загрузка SSH подключений...</div>
                     </div>
                 </div>
             </section>
@@ -194,10 +228,14 @@
 
     <!-- Скрипты -->
     <script src="js/cyberkitty-theme.js?v=7"></script>
+    <script src="js/layout-manager.js?v=18"></script>
     <script src="js/pomodoro.js?v=7"></script>
-    <script src="js/calendar.js?v=7"></script>
-    <script src="js/system.js?v=7"></script>
-    <script src="js/monitor.js?v=7"></script>
-    <script src="js/dashboard.js?v=7"></script>
+    <script src="js/calendar.js?v=8"></script>
+    <script src="js/system.js?v=9"></script>
+    <script src="js/processes.js?v=1"></script>
+    <script src="js/docker.js?v=1"></script>
+    <script src="js/ssh.js?v=1"></script>
+    <script src="js/monitor.js?v=8"></script>
+    <script src="js/dashboard.js?v=8"></script>
 </body>
 </html> 

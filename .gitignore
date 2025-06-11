@@ -23,4 +23,7 @@ __pycache__/
 /tmp/pomodoro_*.txt
 
 # Кэш браузера
-*.cache 
+*.cache
+
+# Google Calendar API keys (security)
+calendar_config.json 

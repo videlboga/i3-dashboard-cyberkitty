@@ -63,11 +63,30 @@ class CyberkittyDashboard {
             console.log('🖥️ Системный виджет инициализирован');
         }
 
-        // Инициализируем мониторинг процессов
+        // Инициализируем мониторинг процессов (старый объединенный виджет)
         if (typeof MonitorWidget !== 'undefined') {
             this.components.monitor = new MonitorWidget();
             this.components.monitor.init();
             console.log('⚙️ Мониторинг процессов инициализирован');
+        }
+        
+        // Инициализируем новые отдельные виджеты
+        if (typeof ProcessesWidget !== 'undefined') {
+            this.components.processes = new ProcessesWidget();
+            this.components.processes.init();
+            console.log('📋 Виджет процессов инициализирован');
+        }
+        
+        if (typeof DockerWidget !== 'undefined') {
+            this.components.docker = new DockerWidget();
+            this.components.docker.init();
+            console.log('🐳 Виджет Docker инициализирован');
+        }
+        
+        if (typeof SSHWidget !== 'undefined') {
+            this.components.ssh = new SSHWidget();
+            this.components.ssh.init();
+            console.log('🔐 Виджет SSH инициализирован');
         }
         
         // Инициализируем обновление времени
@@ -196,8 +215,10 @@ class CyberkittyDashboard {
             }
         });
         
-        // Обработка ошибок
+        // Обработка ошибок (отключено для предотвращения spam логов)
         window.addEventListener('error', (e) => {
+            // Игнорируем null ошибки от ResizeObserver
+            if (e.error === null) return;
             console.error('❌ Ошибка в дашборде:', e.error);
             this.showErrorNotification('Произошла ошибка в дашборде');
         });

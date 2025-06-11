@@ -21,14 +21,16 @@ body {
     display: none;
 }
 
-/* Сетка для оконного режима */
+/* Сетка для ультраширокого дисплея */
 .dashboard-grid {
-    grid-template-columns: 1fr 1fr 1.5fr;
-    grid-template-rows: auto auto;
-    gap: 20px;
-    padding: 0;
-    max-width: 1400px;
-    margin: 0 auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr !important;
+    grid-template-rows: auto !important;
+    gap: 4px !important;
+    padding: 8px !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    min-height: calc(100vh - 60px) !important;
+    align-items: start !important;
 }
 
 /* Делаем виджеты полупрозрачными с глассморфизмом */
@@ -52,22 +54,35 @@ body {
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* Помодоро виджет - левый верхний */
+/* Виджеты в ряд на ультрашироком дисплее */
 .pomodoro-widget {
-    grid-column: 1;
-    grid-row: 1;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
 }
 
-/* Календарь - средний */
+.system-widget {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+}
+
 .calendar-widget {
-    grid-column: 2;
-    grid-row: 1 / span 2;
+    grid-column: 3 !important;
+    grid-row: 1 !important;
 }
 
-/* Мониторинг - правый */
-.monitor-widget {
-    grid-column: 3;
-    grid-row: 1 / span 2;
+.processes-widget {
+    grid-column: 4 !important;
+    grid-row: 1 !important;
+}
+
+.docker-widget {
+    grid-column: 5 !important;
+    grid-row: 1 !important;
+}
+
+.ssh-widget {
+    grid-column: 6 !important;
+    grid-row: 1 !important;
 }
 
 /* Адаптируем помодоро для прозрачности */
@@ -199,20 +214,41 @@ body {
     transform: scale(1.05);
 }
 
-/* Адаптация для маленьких виджетов */
-@media (max-width: 1400px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr 1fr;
-    }
-    
-    .calendar-widget {
-        grid-column: 1;
-        grid-row: 2;
-    }
-    
-    .monitor-widget {
-        grid-column: 2;
-        grid-row: 2 / span 2;
-    }
+/* Медиа-запросы удалены для ультраширокого дисплея */
+
+/* Drag and Drop стили - версия 16 */
+.drag-mode-active .widget {
+    cursor: move !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    border: 2px dashed rgba(0, 255, 255, 0.3) !important;
+    background: rgba(0, 20, 30, 0.8) !important;
+}
+
+.drag-mode-active .draggable-widget:hover {
+    border-color: rgba(0, 255, 255, 0.7) !important;
+    background: rgba(0, 40, 60, 0.9) !important;
+    transform: scale(1.02) !important;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
+}
+
+.drag-mode-active .widget.dragging {
+    opacity: 0.8 !important;
+    transform: rotate(2deg) scale(1.05) !important;
+    z-index: 1000 !important;
+    box-shadow: 0 15px 35px rgba(0, 255, 255, 0.6) !important;
+    border-color: rgba(0, 255, 255, 1) !important;
+}
+
+.drag-mode-active .widget.drag-over {
+    border-color: rgba(255, 100, 255, 1) !important;
+    background: rgba(50, 0, 50, 0.9) !important;
+    transform: scale(1.08) !important;
+    box-shadow: 0 0 30px rgba(255, 100, 255, 0.7) !important;
+    animation: pulse-drop 0.6s infinite alternate !important;
+}
+
+@keyframes pulse-drop {
+    0% { box-shadow: 0 0 30px rgba(255, 100, 255, 0.7); }
+    100% { box-shadow: 0 0 40px rgba(255, 100, 255, 1); }
 } 

@@ -59,6 +59,9 @@ class SystemWidget {
             case 'disks':
                 this.renderDiskActivity();
                 break;
+            case 'layout':
+                this.initLayoutControls();
+                break;
         }
     }
     
@@ -348,6 +351,94 @@ class SystemWidget {
         return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
     }
     
+    initLayoutControls() {
+        // Инициализируем кнопки управления макетом
+        const enableDragBtn = document.getElementById('enable-drag-mode');
+        const resetLayoutBtn = document.getElementById('reset-widget-layout');
+        const saveLayoutBtn = document.getElementById('save-widget-layout');
+        
+        // Функция инициализации, которая может быть отложена
+        const doInit = () => {
+            console.log('🎯 Инициализируем управление layout в system.js');
+            
+            // Проверяем существование LayoutManager
+            if (typeof window.layoutManager === 'undefined') {
+                document.getElementById('layout-info').innerHTML = `
+                    <p style="color: #ef4444;"><strong>⚠️ Ошибка:</strong></p>
+                    <p>LayoutManager не загружен. Пожалуйста, перезагрузите страницу.</p>
+                `;
+                return;
+            }
+
+            this.setupLayoutButtons(enableDragBtn, resetLayoutBtn, saveLayoutBtn);
+        };
+
+        // Если LayoutManager уже готов - инициализируем сразу
+        if (typeof window.layoutManager !== 'undefined') {
+            doInit();
+        } else {
+            // Иначе ждём появления LayoutManager
+            console.log('🎯 LayoutManager ещё не готов, ждём...');
+            const checkInterval = setInterval(() => {
+                if (typeof window.layoutManager !== 'undefined') {
+                    console.log('🎯 LayoutManager готов!');
+                    clearInterval(checkInterval);
+                    doInit();
+                }
+            }, 100);
+            
+            // Таймаут на случай, если что-то пошло не так
+            setTimeout(() => {
+                clearInterval(checkInterval);
+                if (typeof window.layoutManager === 'undefined') {
+                    console.error('❌ LayoutManager не загрузился в течение 5 секунд');
+                }
+            }, 5000);
+        }
+    }
+
+    setupLayoutButtons(enableDragBtn, resetLayoutBtn, saveLayoutBtn) {
+        
+        // Обработчик включения/выключения режима перетаскивания
+        enableDragBtn.addEventListener('click', () => {
+            console.log('🎯 Клик по кнопке режима перетаскивания (system.js)');
+            window.layoutManager.toggleDragMode();
+            
+            // Обновляем статус после переключения
+            setTimeout(() => {
+                if (window.layoutManager.isDragMode) {
+                    this.updateLayoutStatus('Режим перетаскивания включен. Теперь можно перемещать виджеты!');
+                } else {
+                    this.updateLayoutStatus('Режим перетаскивания выключен');
+                }
+            }, 100);
+        });
+        
+        // Обработчик сброса макета
+        resetLayoutBtn.addEventListener('click', () => {
+            if (confirm('Сбросить расположение виджетов к значениям по умолчанию?')) {
+                window.layoutManager.resetLayout();
+                this.updateLayoutStatus('Макет сброшен к значениям по умолчанию');
+            }
+        });
+        
+        // Обработчик сохранения макета
+        saveLayoutBtn.addEventListener('click', () => {
+            window.layoutManager.saveLayout();
+            this.updateLayoutStatus('Макет сохранен в localStorage');
+        });
+        
+        // Обновляем статус
+        this.updateLayoutStatus('Готов к работе');
+    }
+    
+    updateLayoutStatus(message) {
+        const statusElement = document.querySelector('#layout-info p');
+        if (statusElement) {
+            statusElement.innerHTML = `<strong>Статус:</strong> ${message}`;
+        }
+    }
+
     startAutoRefresh() {
         setInterval(() => {
             this.loadAllData();

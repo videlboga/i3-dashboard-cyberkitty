@@ -47,6 +47,15 @@ class CyberkittyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         elif self.path == '/api/disk-activity':
             self.serve_disk_activity()
             return
+        elif self.path == '/api/calendar-config':
+            self.serve_calendar_config()
+            return
+        elif self.path == '/api/docker-containers':
+            self.serve_docker_containers()
+            return
+        elif self.path == '/api/ssh-connections':
+            self.serve_ssh_connections()
+            return
         
         # Обычные файлы через стандартный обработчик
         super().do_GET()
@@ -494,6 +503,259 @@ class CyberkittyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
     
+    def serve_calendar_config(self):
+        """API для конфигурации Google Calendar"""
+        print("📅 Обрабатываю запрос конфигурации календаря...")
+        try:
+            # Пытаемся загрузить настройки из файла
+            config_file = Path('calendar_config.json')
+            
+            if config_file.exists():
+                with open(config_file, 'r') as f:
+                    config = json.load(f)
+                    print(f"✅ Настройки календаря загружены из {config_file}")
+            else:
+                # Создаем файл с примером настроек
+                config = {
+                    'apiKey': '',
+                    'clientId': '',
+                    'instructions': 'Получите API ключи в Google Cloud Console'
+                }
+                
+                with open(config_file, 'w') as f:
+                    json.dump(config, f, indent=2)
+                    
+                print(f"📝 Создан файл настроек: {config_file}")
+                print("⚠️  Настройте API ключи для работы с Google Calendar")
+            
+            # Скрываем чувствительные данные если они есть
+            response_config = config.copy()
+            if response_config.get('apiKey'):
+                response_config['apiKey'] = response_config['apiKey'][:10] + '...' if len(response_config['apiKey']) > 10 else 'set'
+            if response_config.get('clientId'):
+                response_config['clientId'] = response_config['clientId'][:20] + '...' if len(response_config['clientId']) > 20 else 'set'
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps(response_config).encode())
+            
+        except Exception as e:
+            print(f"❌ Ошибка обработки конфигурации календаря: {e}")
+            # Возвращаем пустую конфигурацию чтобы фронт перешел в offline режим
+            self.send_response(404)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+
+    def serve_docker_containers(self):
+        """API для информации о Docker контейнерах (локально и на серверах)"""
+        print("🐳 Обрабатываю запрос Docker контейнеров...")
+        try:
+            containers_data = {
+                'local': self.get_local_docker_containers(),
+                'servers': {
+                    'got_is_tod': self.get_remote_docker_containers('got_is_tod'),
+                    'azure-aluminium': self.get_remote_docker_containers('azure-aluminium')
+                }
+            }
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps(containers_data).encode())
+            
+            print(f"🐳 Docker данные отправлены")
+            
+        except Exception as e:
+            print(f"❌ Ошибка получения Docker контейнеров: {e}")
+            self.send_response(500)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+
+    def serve_ssh_connections(self):
+        """API для информации о SSH подключениях и статусе серверов"""
+        print("🔐 Обрабатываю запрос SSH подключений...")
+        try:
+            ssh_data = {
+                'local': self.get_local_ssh_connections(),     # Исправлено для соответствия клиенту
+                'servers': {                                   # Исправлено для соответствия клиенту
+                    'got_is_tod': self.check_server_status('got_is_tod'),
+                    'azure-aluminium': self.check_server_status('azure-aluminium')
+                }
+            }
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps(ssh_data).encode())
+            
+            print(f"🔐 SSH данные отправлены")
+            
+        except Exception as e:
+            print(f"❌ Ошибка получения SSH подключений: {e}")
+            self.send_response(500)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+
+    def get_local_docker_containers(self):
+        """Получение локальных Docker контейнеров"""
+        try:
+            import subprocess
+            result = subprocess.run(['docker', 'ps', '-a', '--format', 'json'], 
+                                  capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                containers = []
+                for line in result.stdout.strip().split('\n'):
+                    if line:
+                        container = json.loads(line)
+                        containers.append({
+                            'id': container.get('ID', ''),
+                            'name': container.get('Names', ''),
+                            'image': container.get('Image', ''),
+                            'status': container.get('Status', ''),
+                            'state': container.get('State', ''),
+                            'ports': container.get('Ports', ''),
+                            'created': container.get('CreatedAt', '')
+                        })
+                return containers
+            else:
+                print("⚠️ Docker не установлен или недоступен локально")
+                return []
+                
+        except Exception as e:
+            print(f"⚠️ Ошибка получения локальных Docker контейнеров: {e}")
+            return []
+
+    def get_remote_docker_containers(self, server_alias):
+        """Получение Docker контейнеров с удаленного сервера"""
+        try:
+            import subprocess
+            cmd = f'ssh {server_alias} "docker ps -a --format json" 2>/dev/null'
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=15)
+            
+            if result.returncode == 0:
+                containers = []
+                for line in result.stdout.strip().split('\n'):
+                    if line:
+                        try:
+                            container = json.loads(line)
+                            containers.append({
+                                'id': container.get('ID', ''),
+                                'name': container.get('Names', ''),
+                                'image': container.get('Image', ''),
+                                'status': container.get('Status', ''),
+                                'state': container.get('State', ''),
+                                'ports': container.get('Ports', ''),
+                                'created': container.get('CreatedAt', ''),
+                                'server': server_alias
+                            })
+                        except json.JSONDecodeError:
+                            continue
+                return containers
+            else:
+                print(f"⚠️ Не удалось подключиться к {server_alias} или Docker недоступен")
+                return []
+                
+        except Exception as e:
+            print(f"⚠️ Ошибка получения Docker контейнеров с {server_alias}: {e}")
+            return []
+
+    def get_remote_server_processes(self, server_alias):
+        """Получение процессов с удаленного сервера"""
+        try:
+            import subprocess
+            # Получаем топ процессов с сервера
+            cmd = f'ssh -o ConnectTimeout=5 {server_alias} "ps aux --sort=-%cpu | head -10" 2>/dev/null'
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                processes = []
+                lines = result.stdout.strip().split('\n')[1:]  # Пропускаем заголовок
+                for i, line in enumerate(lines[:8]):  # Берем топ 8 процессов
+                    if line.strip():
+                        parts = line.split(None, 10)  # Разбиваем на максимум 11 частей
+                        if len(parts) >= 11:
+                            processes.append({
+                                'protocol': f'{server_alias} Process',
+                                'local_address': f"CPU: {parts[2]}%",
+                                'remote_address': f"{parts[10][:50]}..." if len(parts[10]) > 50 else parts[10],
+                                'status': f"MEM: {parts[3]}%"
+                            })
+                return processes
+            else:
+                return []
+                
+        except Exception as e:
+            print(f"⚠️ Ошибка получения процессов с {server_alias}: {e}")
+            return []
+
+    def get_local_ssh_connections(self):
+        """Получение процессов с удаленных серверов"""
+        ssh_connections = []
+        
+        try:
+            # Получаем процессы с каждого сервера
+            servers = ['got_is_tod', 'azure-aluminium']
+            
+            for server in servers:
+                server_processes = self.get_remote_server_processes(server)
+                ssh_connections.extend(server_processes)
+            
+            return ssh_connections
+            
+        except Exception as e:
+            print(f"⚠️ Ошибка получения процессов серверов: {e}")
+            return []
+
+    def check_server_status(self, server_alias):
+        """Проверка статуса удаленного сервера"""
+        try:
+            import subprocess
+            import time
+            
+            start_time = time.time()
+            # Простая проверка подключения
+            cmd = f'ssh -o ConnectTimeout=5 -o BatchMode=yes {server_alias} "echo connected" 2>/dev/null'
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            
+            ping_time = round((time.time() - start_time) * 1000, 1)  # в миллисекундах
+            
+            if result.returncode == 0 and 'connected' in result.stdout:
+                # Получаем дополнительную информацию о сервере
+                uptime_cmd = f'ssh -o ConnectTimeout=3 {server_alias} "uptime; df -h / | tail -1; free -m | grep Mem" 2>/dev/null'
+                uptime_result = subprocess.run(uptime_cmd, shell=True, capture_output=True, text=True, timeout=8)
+                
+                server_info = {'ping': ping_time}
+                if uptime_result.returncode == 0:
+                    lines = uptime_result.stdout.strip().split('\n')
+                    if len(lines) >= 3:
+                        server_info['uptime'] = lines[0].strip()
+                        server_info['disk'] = lines[1].strip()
+                        server_info['memory'] = lines[2].strip()
+                
+                return {
+                    'status': 'online',
+                    'ping': ping_time,
+                    'info': server_info
+                }
+            else:
+                return {
+                    'status': 'offline',
+                    'ping': None,
+                    'error': 'Connection failed'
+                }
+                
+        except Exception as e:
+            return {
+                'status': 'error',
+                'ping': None,
+                'error': str(e)
+            }
+
     def log_message(self, format, *args):
         """Красивые логи в стиле Cyberkitty"""
         print(f"🚀 [{self.log_date_time_string()}] {format % args}")
