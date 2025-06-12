@@ -53,9 +53,9 @@ class MonitorWidget {
             case 'docker':
                 this.renderDockerContainers();
                 break;
-            case 'ssh':
-                this.renderSSHConnections();
-                break;
+            // case 'ssh':
+            //     this.renderSSHConnections();
+            //     break;
         }
     }
     
@@ -148,40 +148,40 @@ class MonitorWidget {
         }
     }
     
-    async renderSSHConnections() {
-        const container = document.getElementById('ssh-connections');
-        container.innerHTML = '<div class="loading">Загрузка SSH подключений...</div>';
-        
-        try {
-            const response = await fetch('/api/ssh-connections');
-            this.sshConnections = await response.json();
-            
-            let sshHtml = `
-                <div class="ssh-sections">
-                    <div class="ssh-section servers-status">
-                        <h3>🌐 Статус серверов</h3>
-                        ${this.renderServersStatus(this.sshConnections.servers_status)}
-                    </div>
-                    <div class="ssh-section local-connections">
-                        <h3>🔐 Локальные SSH подключения</h3>
-                        ${this.renderSSHTable(this.sshConnections.local_connections)}
-                    </div>
-                </div>
-            `;
-            
-            container.innerHTML = sshHtml;
-            
-        } catch (error) {
-            console.error('❌ Ошибка загрузки SSH данных:', error);
-            container.innerHTML = `
-                <div class="error-message">
-                    <div class="error-icon">❌</div>
-                    <span>Ошибка загрузки SSH данных</span>
-                    <small>Проверьте SSH ключи и доступность серверов</small>
-                </div>
-            `;
-        }
-    }
+    // async renderSSHConnections() {
+    //     const container = document.getElementById('ssh-connections');
+    //     container.innerHTML = '<div class="loading">Загрузка SSH подключений...</div>';
+    //     
+    //     try {
+    //         const response = await fetch('/api/ssh-connections');
+    //         this.sshConnections = await response.json();
+    //         
+    //         let sshHtml = `
+    //             <div class="ssh-sections">
+    //                 <div class="ssh-section servers-status">
+    //                     <h3>🌐 Статус серверов</h3>
+    //                     ${this.renderServersStatus(this.sshConnections.servers_status)}
+    //                 </div>
+    //                 <div class="ssh-section local-connections">
+    //                     <h3>🔐 Локальные SSH подключения</h3>
+    //                     ${this.renderSSHTable(this.sshConnections.local_connections)}
+    //                 </div>
+    //             </div>
+    //         `;
+    //         
+    //         container.innerHTML = sshHtml;
+    //         
+    //     } catch (error) {
+    //         console.error('❌ Ошибка загрузки SSH данных:', error);
+    //         container.innerHTML = `
+    //             <div class="error-message">
+    //                 <div class="error-icon">❌</div>
+    //                 <span>Ошибка загрузки SSH данных</span>
+    //                 <small>Проверьте SSH ключи и доступность серверов</small>
+    //             </div>
+    //         `;
+    //     }
+    // }
     
     getCpuClass(cpu) {
         if (cpu >= 50) return 'high-usage';

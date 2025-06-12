@@ -18,7 +18,7 @@ class LayoutManager {
             'calendar-section': { top: 8, left: 624 },
             'processes-section': { top: 8, left: 932 },
             'docker-section': { top: 256, left: 8 },
-            'ssh-section': { top: 256, left: 316 }
+            // 'ssh-section': { top: 256, left: 316 }
         };
         
         // Сохраняем ссылки на обработчики для правильного удаления
@@ -163,10 +163,11 @@ class LayoutManager {
             } else if (widget.id === 'docker-section') {
                 defaultWidth = 450;
                 defaultHeight = 350;
-            } else if (widget.id === 'ssh-section') {
-                defaultWidth = 500;
-                defaultHeight = 400;
             }
+            // else if (widget.id === 'ssh-section') {
+            //     defaultWidth = 500;
+            //     defaultHeight = 400;
+            // }
             
             // ИСПОЛЬЗУЕМ СОХРАНЕННЫЕ РАЗМЕРЫ ЕСЛИ ОНИ ЕСТЬ
             let finalWidth = defaultWidth;
