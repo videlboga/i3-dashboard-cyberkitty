@@ -1,6 +1,9 @@
 /**
- * 🎯 Менеджер расположения виджетов - CyberKitty Dashboard
- * Управление drag-and-drop и сохранение позиций виджетов
+ * 🎯 Layout Manager v26 - CyberKitty Dashboard
+ * 💡 ПРОСТОЕ РЕШЕНИЕ: 
+ * 🔒 Вне режима редактирования - размеры заблокированы
+ * ✏️ В режиме редактирования - полная свобода изменения размеров
+ * 💾 При выходе - сохранить и заблокировать
  */
 class LayoutManager {
     constructor() {
@@ -30,22 +33,51 @@ class LayoutManager {
     }
 
     init() {
-        console.log('🎯 Инициализация менеджера расположения');
-        
-        // Проверяем готовность DOM
-        console.log('🎯 DOM готов:', document.readyState);
-        console.log('🎯 Элементов .widget:', document.querySelectorAll('.widget').length);
+        console.log('🚀 [Layout Manager v26] ПРОСТОЕ РЕШЕНИЕ');
+        console.log('🔒 [v26] Размеры заблокированы до режима редактирования');
         
         this.setupEventListeners();
         this.loadLayout();
         this.updateWidgetsList();
         
-        // Отладочная информация
-        console.log('🎯 Layout Manager инициализирован');
-        console.log('🎯 Найдено виджетов:', this.widgets.length);
-        console.log('🎯 Виджеты:', this.widgets.map(w => w.id));
+        // Сразу блокируем размеры после загрузки
+        setTimeout(() => {
+            this.lockAllWidgets();
+        }, 500);
         
+        console.log('✅ [v26] Layout Manager готов');
+    }
 
+    lockAllWidgets() {
+        console.log('🔒 [v26] Блокирую размеры всех виджетов...');
+        
+        this.widgets.forEach(widget => {
+            // Убираем возможность изменения размеров
+            widget.style.resize = 'none';
+            widget.style.overflow = 'visible';
+            
+            // Убираем max-width/max-height чтобы не ограничивать
+            widget.style.maxWidth = '';
+            widget.style.maxHeight = '';
+            
+            console.log(`🔒 [v26] Заблокирован: ${widget.id}`);
+        });
+        
+        console.log('✅ [v26] Все виджеты заблокированы');
+    }
+
+    unlockAllWidgets() {
+        console.log('🔓 [v26] Разблокирую размеры всех виджетов...');
+        
+        this.widgets.forEach(widget => {
+            // Включаем возможность изменения размеров
+            widget.style.resize = 'both';
+            widget.style.overflow = 'auto';
+            
+            console.log(`🔓 [v26] Разблокирован: ${widget.id}`);
+        });
+        
+        console.log('✅ [v26] Все виджеты разблокированы для редактирования');
     }
 
     setupEventListeners() {
@@ -88,14 +120,26 @@ class LayoutManager {
     }
 
     enableDragMode() {
-        console.log('🎯 Включаем режим перетаскивания...');
+        console.log('🚀 [v26] Включаем режим перетаскивания...');
         this.isDragMode = true;
         this.updateWidgetsList();
         
-        console.log('🎯 Обрабатываем виджеты:', this.widgets.length);
+        // 🔓 РАЗБЛОКИРУЕМ все виджеты для редактирования
+        this.unlockAllWidgets();
+        
+        console.log('🎯 [v26] Обрабатываем виджеты:', this.widgets.length);
+        
+        // Получаем сохраненные размеры
+        const savedLayout = localStorage.getItem('cyberkitty_dashboard_layout');
+        let layout = {};
+        try {
+            layout = savedLayout ? JSON.parse(savedLayout) : {};
+        } catch (e) {
+            console.error('❌ Ошибка чтения сохраненного макета:', e);
+        }
         
         this.widgets.forEach((widget, index) => {
-            console.log(`🎯 Виджет ${index + 1}: ${widget.id}`);
+            console.log(`📏 [v26] Применяю размер: ${widget.id}`);
             widget.classList.add('draggable');
             
             // Устанавливаем минимальные размеры по умолчанию для каждого типа виджета
@@ -123,29 +167,29 @@ class LayoutManager {
                 defaultHeight = 400;
             }
             
-            // Получаем текущие размеры
-            const computedStyle = window.getComputedStyle(widget);
-            const currentWidthPx = parseInt(widget.style.width) || parseInt(computedStyle.width) || defaultWidth;
-            const currentHeightPx = parseInt(widget.style.height) || parseInt(computedStyle.height) || defaultHeight;
+            // ИСПОЛЬЗУЕМ СОХРАНЕННЫЕ РАЗМЕРЫ ЕСЛИ ОНИ ЕСТЬ
+            let finalWidth = defaultWidth;
+            let finalHeight = defaultHeight;
             
-            // Проверяем, что размеры не слишком маленькие
-            const finalWidth = Math.max(currentWidthPx, defaultWidth);
-            const finalHeight = Math.max(currentHeightPx, defaultHeight);
-            
-            console.log(`🎯 Размеры ${widget.id}: ${finalWidth}px x ${finalHeight}px (было: ${currentWidthPx}x${currentHeightPx})`);
+            if (layout[widget.id] && layout[widget.id].width && layout[widget.id].height) {
+                finalWidth = Math.max(layout[widget.id].width, defaultWidth);
+                finalHeight = Math.max(layout[widget.id].height, defaultHeight);
+                console.log(`📏 [v26] Применяю размер: ${widget.id} -> ${finalWidth}px x ${finalHeight}px (сохраненные)`);
+            } else {
+                console.log(`📏 [v26] Применяю размер: ${widget.id} -> ${finalWidth}px x ${finalHeight}px (по умолчанию)`);
+            }
             
             // Принудительно включаем resize
             widget.style.resize = 'both';
             widget.style.overflow = 'auto';
             
-            // ПРИНУДИТЕЛЬНО устанавливаем размеры
+            // 🚀 ПРИНУДИТЕЛЬНО устанавливаем размеры через минимальные размеры
             widget.style.width = finalWidth + 'px';
             widget.style.height = finalHeight + 'px';
+            widget.style.minWidth = finalWidth + 'px';
+            widget.style.minHeight = finalHeight + 'px';
             
-            console.log(`🎯 Применены размеры ${widget.id}: ${widget.style.width} x ${widget.style.height}`);
-            
-            // Добавляем обработчик изменения размера
-            this.setupResizeObserver(widget);
+            console.log(`✅ [v26] Размер применен: ${widget.id} -> ${widget.style.width} x ${widget.style.height}`);
             
             // Добавляем обработчики мыши для заголовка виджета
             const header = widget.querySelector('.widget-header');
@@ -158,18 +202,18 @@ class LayoutManager {
         // Добавляем класс режима перетаскивания к grid
         const grid = document.querySelector('.dashboard-grid');
         if (grid) {
-            console.log('🎯 Grid контейнер найден');
+            console.log('🎯 [v26] Grid контейнер найден');
             grid.classList.add('drag-mode');
         } else {
-            console.log('❌ Grid контейнер НЕ найден!');
+            console.log('❌ [v26] Grid контейнер НЕ найден!');
         }
         
-        console.log('🎯 Режим перетаскивания включён');
+        console.log('✅ [v26] Режим перетаскивания включён');
     }
 
     disableDragMode() {
         this.isDragMode = false;
-        console.log('🎯 Выключаем режим перетаскивания...');
+        console.log('🚀 [v26] Выключаем режим перетаскивания...');
         
         this.widgets.forEach(widget => {
             widget.classList.remove('draggable', 'dragging');
@@ -186,13 +230,7 @@ class LayoutManager {
             }
         });
 
-        // Очищаем ResizeObserver
-        if (this.resizeObservers) {
-            this.resizeObservers.forEach(observer => {
-                observer.disconnect();
-            });
-            this.resizeObservers = [];
-        }
+        // ResizeObserver больше не используются
 
         const grid = document.querySelector('.dashboard-grid');
         if (grid) {
@@ -203,7 +241,13 @@ class LayoutManager {
         document.removeEventListener('mousemove', this.boundHandlers.mouseMove);
         document.removeEventListener('mouseup', this.boundHandlers.mouseUp);
         
-        console.log('🎯 Режим перетаскивания выключен');
+        // Сохраняем макет при выходе из режима перетаскивания
+        this.saveLayout();
+        
+        // 🔒 БЛОКИРУЕМ все виджеты после редактирования
+        this.lockAllWidgets();
+        
+        console.log('✅ [v26] Режим перетаскивания выключен');
     }
 
     handleDragStart(e) {
@@ -291,59 +335,7 @@ class LayoutManager {
         console.log(`🎯 Привязка к сетке: ${widget.id} -> (${snappedX}, ${snappedY})`);
     }
 
-    setupResizeObserver(widget) {
-        // Используем ResizeObserver для отслеживания изменения размеров
-        if (window.ResizeObserver) {
-            let isResizing = false; // Флаг для предотвращения циклических обновлений
-            
-            const resizeObserver = new ResizeObserver(entries => {
-                if (isResizing) return; // Предотвращаем циклические обновления
-                
-                for (let entry of entries) {
-                    const { width, height } = entry.contentRect;
-                    
-                    // Игнорируем слишком маленькие размеры
-                    if (width < 50 || height < 50) {
-                        console.log(`📏 Игнорируем слишком маленький размер: ${widget.id} -> ${width}x${height}`);
-                        return;
-                    }
-                    
-                    isResizing = true;
-                    
-                    // Применяем размеры только если они кардинально изменились
-                    const currentWidth = parseInt(widget.style.width) || 0;
-                    const currentHeight = parseInt(widget.style.height) || 0;
-                    
-                    if (Math.abs(width - currentWidth) > 10 || Math.abs(height - currentHeight) > 10) {
-                        widget.style.width = width + 'px';
-                        widget.style.height = height + 'px';
-                        
-                        console.log(`📏 Размер обновлен: ${widget.id} -> ${width}x${height}`);
-                        
-                        // Автосохранение при изменении размера (с дебаунсом)
-                        clearTimeout(this.resizeTimeout);
-                        this.resizeTimeout = setTimeout(() => {
-                            this.saveLayout();
-                        }, 1000);
-                    }
-                    
-                    // Сбрасываем флаг через короткое время
-                    setTimeout(() => {
-                        isResizing = false;
-                    }, 100);
-                }
-            });
-            resizeObserver.observe(widget);
-            
-            // Сохраняем observer для очистки
-            if (!this.resizeObservers) {
-                this.resizeObservers = [];
-            }
-            this.resizeObservers.push(resizeObserver);
-        }
-    }
-
-
+    // ResizeObserver больше не нужны - используется простая блокировка/разблокировка
 
     saveLayout() {
         const layout = {};
@@ -377,7 +369,7 @@ class LayoutManager {
         if (savedLayout) {
             try {
                 const layout = JSON.parse(savedLayout);
-                console.log('📥 Загружаем сохранённый макет', layout);
+                console.log('📥 [v26] Загружаем сохранённый макет', layout);
                 
                 Object.keys(layout).forEach(widgetId => {
                     const widget = document.getElementById(widgetId);
@@ -386,15 +378,17 @@ class LayoutManager {
                         widget.style.top = layout[widgetId].top + 'px';
                         widget.style.left = layout[widgetId].left + 'px';
                         
-                        // Восстанавливаем размеры если они сохранены и валидные
+                        // 🚀 ПРИНУДИТЕЛЬНО восстанавливаем размеры с минимальными значениями
                         if (layout[widgetId].width && layout[widgetId].width > 200) {
                             widget.style.width = layout[widgetId].width + 'px';
+                            widget.style.minWidth = layout[widgetId].width + 'px';
                         }
                         if (layout[widgetId].height && layout[widgetId].height > 150) {
                             widget.style.height = layout[widgetId].height + 'px';
+                            widget.style.minHeight = layout[widgetId].height + 'px';
                         }
                         
-                        console.log(`📥 Восстановлен ${widgetId}: ${widget.style.width} x ${widget.style.height} в позиции (${widget.style.left}, ${widget.style.top})`);
+                        console.log(`📏 [v26] Применяю размер: ${widgetId} -> ${widget.style.width} x ${widget.style.height} в позиции (${widget.style.left}, ${widget.style.top})`);
                     }
                 });
                 
@@ -402,6 +396,8 @@ class LayoutManager {
             } catch (error) {
                 console.error('❌ Ошибка загрузки макета:', error);
             }
+        } else {
+            console.log('ℹ️ [v26] Сохраненного макета нет, используем размеры по умолчанию');
         }
     }
 
@@ -440,8 +436,6 @@ class LayoutManager {
             document.getElementById('layout-controls')?.classList.remove('show');
         }
     }
-
-
 
     showNotification(message) {
         // Создаём временное уведомление
@@ -486,8 +480,6 @@ if (typeof window !== 'undefined') {
         console.log('🚀 Инициализируем LayoutManager');
         window.layoutManager = new LayoutManager();
         console.log('✅ LayoutManager готов к работе');
-        
-
     }
     
     if (document.readyState === 'loading') {
