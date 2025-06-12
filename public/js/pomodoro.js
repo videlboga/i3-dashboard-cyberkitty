@@ -231,6 +231,7 @@ class PomodoroTimer {
             await this.writeStatusToFile();
             
             // Запускаем anime-lock-python напрямую
+            console.log('🔒 Отправляю запрос на запуск аниме локера...');
             const response = await fetch('/api/lock-screen', {
                 method: 'POST',
                 headers: {
@@ -247,6 +248,8 @@ class PomodoroTimer {
                 console.warn('Не удалось запустить anime-lock через API, пробуем альтернативный способ');
                 // Альтернативный способ через системную команду
                 this.lockScreenFallback();
+            } else {
+                console.log('✅ Аниме локер успешно запущен через сервер');
             }
         } catch (error) {
             console.error('Ошибка запуска блокировки:', error);
