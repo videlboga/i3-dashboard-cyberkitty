@@ -6,7 +6,7 @@
 
 import http.server
 import socketserver
-import webbrowser
+# import webbrowser  # Убрано согласно пользовательскому требованию
 import os
 import sys
 import json
@@ -783,12 +783,13 @@ def main():
             print("\n💡 Для остановки нажмите Ctrl+C")
             print("="*50 + "\n")
             
-            # Открываем браузер
-            try:
-                webbrowser.open(server_url)
-            except Exception as e:
-                print(f"⚠️  Не удалось открыть браузер: {e}")
-                print(f"   Откройте вручную: {server_url}")
+            # Браузер запускается только через лончер по запросу
+            # try:
+            #     webbrowser.open(server_url)
+            # except Exception as e:
+            #     print(f"⚠️  Не удалось открыть браузер: {e}")
+            #     print(f"   Откройте вручную: {server_url}")
+            print(f"   Запустите браузер через лончер: ./launch-transparent.sh")
             
             # Запускаем сервер
             httpd.serve_forever()

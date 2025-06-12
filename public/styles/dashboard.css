@@ -785,7 +785,7 @@ html, body {
 
 /* Ограничения только для конкретных виджетов */
 .calendar-widget {
-    max-height: 600px; /* Календарь имеет ограничение */
+    /* max-height: 600px; */ /* Убираем ограничение для свободного растягивания */
 }
 
 .system-widget {
@@ -1858,5 +1858,248 @@ html, body {
 .docker-widget .docker-containers {
     flex: 1;
     min-height: 0;
+}
+
+/* ========================================
+   КАЛЕНДАРЬ СТИЛИ CYBERKITTY
+   ======================================== */
+
+/* Календарь пустое состояние */
+.calendar-empty {
+    text-align: center;
+    padding: var(--padding-large) var(--padding-normal);
+    color: var(--cyberkitty-grey);
+}
+
+.calendar-empty .empty-icon {
+    font-size: 48px;
+    margin-bottom: var(--margin-normal);
+    opacity: 0.6;
+    color: var(--cyberkitty-blue);
+}
+
+.calendar-empty p {
+    font-size: var(--font-size-large);
+    font-weight: 500;
+    margin-bottom: var(--margin-small);
+    color: var(--cyberkitty-fg);
+}
+
+.calendar-empty small {
+    font-size: var(--font-size-small);
+    opacity: 0.7;
+    color: var(--cyberkitty-grey);
+}
+
+/* Календарь навигация */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--padding-normal) var(--padding-large);
+    border-bottom: 1px solid var(--cyberkitty-border);
+    background: var(--cyberkitty-bg-light);
+    color: var(--cyberkitty-fg);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.calendar-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--margin-normal);
+}
+
+.calendar-nav .month-title {
+    margin: 0;
+    font-size: var(--font-size-large);
+    font-weight: 600;
+    min-width: 180px;
+    text-align: center;
+    color: var(--cyberkitty-blue);
+}
+
+.calendar-controls {
+    display: flex;
+    gap: var(--margin-small);
+}
+
+/* Календарная сетка */
+.calendar-grid {
+    padding: var(--padding-normal);
+    background: var(--cyberkitty-bg);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    margin-bottom: var(--margin-small);
+}
+
+.weekday {
+    padding: var(--padding-small);
+    text-align: center;
+    font-weight: 600;
+    font-size: 10px;
+    color: var(--cyberkitty-blue);
+    text-transform: uppercase;
+    background: var(--cyberkitty-bg-light);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--cyberkitty-border);
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cyberkitty-bg-light);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--cyberkitty-border);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    min-height: 32px;
+    color: var(--cyberkitty-fg);
+    font-size: var(--font-size-small);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.calendar-day:hover {
+    background: var(--cyberkitty-selected);
+    border-color: var(--cyberkitty-blue);
+    transform: scale(1.05);
+    box-shadow: var(--shadow-small);
+}
+
+.calendar-day:focus {
+    outline: none;
+}
+
+.calendar-day.empty {
+    cursor: default;
+    opacity: 0;
+}
+
+.calendar-day.today {
+    background: var(--cyberkitty-bg-light) !important;
+    color: var(--cyberkitty-fg) !important;
+    font-weight: bold !important;
+    border: 2px solid var(--cyberkitty-green) !important;
+    box-shadow: 0 0 8px rgba(166, 227, 161, 0.4) !important;
+}
+
+.calendar-day.today:hover {
+    background: var(--cyberkitty-selected) !important;
+    border: 2px solid var(--cyberkitty-green) !important;
+    box-shadow: 0 0 12px rgba(166, 227, 161, 0.6) !important;
+    transform: scale(1.05) !important;
+}
+
+.calendar-day.selected {
+    background: rgba(116, 199, 236, 0.1);
+    color: var(--cyberkitty-blue);
+    font-weight: bold;
+    border: 2px solid var(--cyberkitty-blue) !important;
+    box-shadow: 0 0 8px rgba(116, 199, 236, 0.4);
+}
+
+.calendar-day.selected:hover {
+    background: rgba(116, 199, 236, 0.2);
+    border: 2px solid var(--cyberkitty-blue) !important;
+    transform: scale(1.05);
+    box-shadow: 0 0 12px rgba(116, 199, 236, 0.6);
+    color: white;
+}
+
+/* Когда день одновременно сегодняшний И выбранный - комбинированное выделение */
+.calendar-day.today.selected {
+    background: rgba(166, 227, 161, 0.1) !important;
+    color: var(--cyberkitty-green) !important;
+    border: 2px solid var(--cyberkitty-green) !important;
+    box-shadow: 0 0 8px rgba(166, 227, 161, 0.4), inset 0 0 0 1px var(--cyberkitty-blue) !important;
+}
+
+.calendar-day.today.selected:hover {
+    background: rgba(166, 227, 161, 0.2) !important;
+    border: 2px solid var(--cyberkitty-green) !important;
+    box-shadow: 0 0 12px rgba(166, 227, 161, 0.6), inset 0 0 0 1px var(--cyberkitty-blue) !important;
+    color: white !important;
+}
+
+.day-number {
+    font-size: var(--font-size-normal);
+    font-weight: 500;
+}
+
+/* События выбранной даты */
+.selected-date-events {
+    padding: var(--padding-large);
+    border-top: 1px solid var(--cyberkitty-border);
+    background: var(--cyberkitty-bg-light);
+}
+
+.selected-date-events h4 {
+    margin: 0 0 var(--margin-normal) 0;
+    color: var(--cyberkitty-blue);
+    font-size: var(--font-size-large);
+    font-weight: 600;
+}
+
+.day-events-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--margin-small);
+}
+
+.compact-event {
+    display: flex;
+    align-items: center;
+    gap: var(--margin-normal);
+    padding: var(--padding-normal) var(--padding-normal);
+    background: var(--cyberkitty-bg);
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--cyberkitty-blue);
+    border: 1px solid var(--cyberkitty-border);
+    box-shadow: var(--shadow-small);
+    transition: all var(--transition-fast);
+}
+
+.compact-event:hover {
+    background: var(--cyberkitty-selected);
+    border-left-color: var(--cyberkitty-pink);
+}
+
+.event-time {
+    font-size: var(--font-size-small);
+    font-weight: 600;
+    color: var(--cyberkitty-blue);
+    min-width: 60px;
+}
+
+.event-title {
+    font-size: var(--font-size-normal);
+    color: var(--cyberkitty-fg);
+    font-weight: 500;
+}
+
+.no-events {
+    text-align: center;
+    padding: var(--padding-large);
+    color: var(--cyberkitty-grey);
+    font-style: italic;
 }
 

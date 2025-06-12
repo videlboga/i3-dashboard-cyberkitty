@@ -40,8 +40,9 @@ class LayoutManager {
         this.loadLayout();
         this.updateWidgetsList();
         
-        // Сразу блокируем размеры после загрузки
+        // Применяем сохранённый макет и блокируем размеры
         setTimeout(() => {
+            this.applyLayout();
             this.lockAllWidgets();
         }, 500);
         
@@ -222,6 +223,9 @@ class LayoutManager {
             widget.style.resize = 'none';
             widget.style.overflow = 'visible';
             
+            // ПРИНУДИТЕЛЬНО сохраняем абсолютное позиционирование в обычном режиме
+            widget.style.position = 'absolute';
+            
             // Удаляем обработчики с заголовков
             const header = widget.querySelector('.widget-header');
             if (header) {
@@ -230,11 +234,11 @@ class LayoutManager {
             }
         });
 
-        // ResizeObserver больше не используются
-
         const grid = document.querySelector('.dashboard-grid');
         if (grid) {
             grid.classList.remove('drag-mode');
+            // В обычном режиме тоже используем block для абсолютного позиционирования
+            grid.style.display = 'block';
         }
 
         // Удаляем глобальные обработчики если были добавлены
@@ -243,6 +247,9 @@ class LayoutManager {
         
         // Сохраняем макет при выходе из режима перетаскивания
         this.saveLayout();
+        
+        // Применяем сохранённые позиции после сохранения
+        this.applyLayout();
         
         // 🔒 БЛОКИРУЕМ все виджеты после редактирования
         this.lockAllWidgets();
@@ -398,6 +405,41 @@ class LayoutManager {
             }
         } else {
             console.log('ℹ️ [v26] Сохраненного макета нет, используем размеры по умолчанию');
+        }
+    }
+
+    applyLayout() {
+        const savedLayout = localStorage.getItem('cyberkitty_dashboard_layout');
+        
+        if (savedLayout) {
+            try {
+                const layout = JSON.parse(savedLayout);
+                console.log('🎯 [v26] Применяем сохранённый макет в обычном режиме', layout);
+                
+                Object.keys(layout).forEach(widgetId => {
+                    const widget = document.getElementById(widgetId);
+                    if (widget && layout[widgetId]) {
+                        // ПРИНУДИТЕЛЬНО устанавливаем абсолютные позиции
+                        widget.style.position = 'absolute';
+                        widget.style.top = layout[widgetId].top + 'px';
+                        widget.style.left = layout[widgetId].left + 'px';
+                        widget.style.width = layout[widgetId].width + 'px';
+                        widget.style.height = layout[widgetId].height + 'px';
+                        
+                        // Убираем grid позиционирование
+                        widget.style.gridColumn = 'unset';
+                        widget.style.gridRow = 'unset';
+                        
+                        console.log(`🎯 [v26] Применены позиции: ${widgetId} -> (${layout[widgetId].left}, ${layout[widgetId].top}) размер ${layout[widgetId].width}x${layout[widgetId].height}`);
+                    }
+                });
+                
+                console.log('✅ [v26] Макет применён в обычном режиме');
+            } catch (error) {
+                console.error('❌ Ошибка применения макета:', error);
+            }
+        } else {
+            console.log('ℹ️ [v26] Нет сохранённого макета, используем CSS Grid');
         }
     }
 
